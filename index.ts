@@ -1,28 +1,11 @@
 import {WebSocketServer, WebSocket} from 'ws';
 
-const webSocketServer = new WebSocketServer({port: 8080});
+const PORT = 8080;
+const webSocketServer = new WebSocketServer({port: PORT});
+console.log('Started WebSocket Server on ws://localhost:' + PORT);
 
 let sockets: WebSocket[] = [];
 let initiativeList: string[] = [];
-
-webSocketServer.on('connection', function connection(webSocket: WebSocket) {
-    console.log('Received new connection!');
-    sockets.push(webSocket);
-
-    webSocket.on('message', function message(data: Blob) {
-        handleCommand(data.toString());
-        console.log(`Command: ${data.toString()}`);
-        console.log(initiativeList);
-    });
-
-    webSocket.on('close', (disconnectedWebSocket: WebSocket) => {
-        console.log('Connection terminated by client.');
-        sockets = sockets.filter((currentSocket) => disconnectedWebSocket !== currentSocket);
-    });
-
-    console.log(initiativeList);
-    sendUpdatedList();
-});
 
 function sendUpdatedList() {
     for (const socket of sockets) {
@@ -76,3 +59,22 @@ function handleCommand(data: string) {
             return;
     }
 }
+
+webSocketServer.on('connection', function connection(webSocket: WebSocket) {
+    console.log('Received new connection!');
+    sockets.push(webSocket);
+
+    webSocket.on('message', function message(data: Blob) {
+        handleCommand(data.toString());
+        console.log(`Command: ${data.toString()}`);
+        console.log(initiativeList);
+    });
+
+    webSocket.on('close', (disconnectedWebSocket: WebSocket) => {
+        console.log('Connection terminated by client.');
+        sockets = sockets.filter((currentSocket) => disconnectedWebSocket !== currentSocket);
+    });
+
+    console.log(initiativeList);
+    sendUpdatedList();
+});
