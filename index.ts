@@ -1,11 +1,16 @@
 import {WebSocketServer, WebSocket} from 'ws';
 
-const PORT = 8080;
+const PORT = 9002;
 const webSocketServer = new WebSocketServer({port: PORT});
 console.log('Started WebSocket Server on ws://localhost:' + PORT);
 
+type Player = {
+    name: string,
+    initiative: number,
+}
+
 let sockets: WebSocket[] = [];
-let initiativeList: string[] = [];
+let initiativeList: Player[] = [];
 
 function sendUpdatedList() {
     for (const socket of sockets) {
@@ -13,14 +18,31 @@ function sendUpdatedList() {
     }
 }
 
-function addPlayer(playerName: string) {
-    if (!initiativeList.includes(playerName)) {
-        initiativeList.push(playerName);
+function playerNameExistsAlready(players: Player[], newPlayerName: string) {
+    const playerNames = players.map((player) => player.name);
+    return playerNames.includes(newPlayerName);
+}
+
+function addPlayer(playerName: string, playerInitiative: number = 10) {
+    if (!playerNameExistsAlready(initiativeList, playerName)) {
+        const newPlayer: Player = {
+            name: playerName,
+            initiative: playerInitiative,
+        }
+
+        let index = 0;
+        for (const player of initiativeList) {
+            if (player.initiative < playerInitiative) {
+                break;
+            }
+            index += 1;
+        }
+        initiativeList.splice(index, 0, newPlayer);
     }
 }
 
 function removePlayer(playerNameToRemove: string) {
-    initiativeList = initiativeList.filter((playerName) => playerName !== playerNameToRemove);
+    initiativeList = initiativeList.filter((player) => player.name !== playerNameToRemove);
 }
 
 function continueToNextPlayer() {
@@ -37,12 +59,14 @@ function returnToPreviousPlayer() {
     }
 }
 
-function handleCommand(data: string) {
-    const commandParts = data.split(' ');
-    const command = commandParts[0];
+function handleCommand(rawBody: string) {
+    const body = JSON.parse(rawBody);
+    const command = body['command'];
     switch (command.toLowerCase()) {
         case 'add':
-            addPlayer(commandParts.slice(1).join(' '));
+            const playerName = body['data']['name'];
+            const initiative = parseInt(body['data']['initiative']);
+            addPlayer(playerName, initiative);
             sendUpdatedList();
             return;
         case 'next':
@@ -54,7 +78,7 @@ function handleCommand(data: string) {
             sendUpdatedList();
             return;
         case 'remove':
-            removePlayer(commandParts.slice(1).join(' '));
+            removePlayer(body['data']);
             sendUpdatedList();
             return;
     }
