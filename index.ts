@@ -1,4 +1,5 @@
 import {WebSocketServer, WebSocket} from 'ws';
+import {addPlayer, continueToNextPlayer, removePlayer, returnToPreviousPlayer} from "./src/InitiativeList";
 
 const PORT = 9002;
 const webSocketServer = new WebSocketServer({port: PORT});
@@ -18,47 +19,6 @@ function sendUpdatedList() {
     }
 }
 
-function playerNameExistsAlready(players: Player[], newPlayerName: string) {
-    const playerNames = players.map((player) => player.name);
-    return playerNames.includes(newPlayerName);
-}
-
-function addPlayer(playerName: string, playerInitiative: number = 10) {
-    if (!playerNameExistsAlready(initiativeList, playerName)) {
-        const newPlayer: Player = {
-            name: playerName,
-            initiative: playerInitiative,
-        }
-
-        let index = 0;
-        for (const player of initiativeList) {
-            if (player.initiative < playerInitiative) {
-                break;
-            }
-            index += 1;
-        }
-        initiativeList.splice(index, 0, newPlayer);
-    }
-}
-
-function removePlayer(playerNameToRemove: string) {
-    initiativeList = initiativeList.filter((player) => player.name !== playerNameToRemove);
-}
-
-function continueToNextPlayer() {
-    const firstElement = initiativeList.shift();
-    if (firstElement != undefined) {
-        initiativeList.push(firstElement);
-    }
-}
-
-function returnToPreviousPlayer() {
-    const lastElement = initiativeList.pop();
-    if (lastElement != undefined) {
-        initiativeList.unshift(lastElement);
-    }
-}
-
 function handleCommand(rawBody: string) {
     try {
         const body = JSON.parse(rawBody);
@@ -67,19 +27,19 @@ function handleCommand(rawBody: string) {
             case 'add':
                 const playerName = body['data']['name'];
                 const initiative = parseInt(body['data']['initiative']);
-                addPlayer(playerName, initiative);
+                initiativeList = addPlayer(initiativeList, playerName, initiative);
                 sendUpdatedList();
                 return;
             case 'next':
-                continueToNextPlayer();
+                initiativeList = continueToNextPlayer(initiativeList);
                 sendUpdatedList();
                 return;
             case 'previous':
-                returnToPreviousPlayer();
+                initiativeList = returnToPreviousPlayer(initiativeList);
                 sendUpdatedList();
                 return;
             case 'remove':
-                removePlayer(body['data']);
+                initiativeList = removePlayer(initiativeList, body['data']);
                 sendUpdatedList();
                 return;
         }
@@ -97,7 +57,7 @@ webSocketServer.on('connection', function connection(webSocket: WebSocket) {
 
     webSocket.on('message', function message(data: Blob) {
         handleCommand(data.toString());
-        console.log(`Command: ${data.toString()}`);
+        console.log(`Received message: ${data.toString()}`);
         console.log(initiativeList);
     });
 
