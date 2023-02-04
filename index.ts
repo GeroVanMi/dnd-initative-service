@@ -60,27 +60,34 @@ function returnToPreviousPlayer() {
 }
 
 function handleCommand(rawBody: string) {
-    const body = JSON.parse(rawBody);
-    const command = body['command'];
-    switch (command.toLowerCase()) {
-        case 'add':
-            const playerName = body['data']['name'];
-            const initiative = parseInt(body['data']['initiative']);
-            addPlayer(playerName, initiative);
-            sendUpdatedList();
-            return;
-        case 'next':
-            continueToNextPlayer();
-            sendUpdatedList();
-            return;
-        case 'previous':
-            returnToPreviousPlayer();
-            sendUpdatedList();
-            return;
-        case 'remove':
-            removePlayer(body['data']);
-            sendUpdatedList();
-            return;
+    try {
+        const body = JSON.parse(rawBody);
+        const command = body['command'];
+        switch (command.toLowerCase()) {
+            case 'add':
+                const playerName = body['data']['name'];
+                const initiative = parseInt(body['data']['initiative']);
+                addPlayer(playerName, initiative);
+                sendUpdatedList();
+                return;
+            case 'next':
+                continueToNextPlayer();
+                sendUpdatedList();
+                return;
+            case 'previous':
+                returnToPreviousPlayer();
+                sendUpdatedList();
+                return;
+            case 'remove':
+                removePlayer(body['data']);
+                sendUpdatedList();
+                return;
+        }
+    } catch (error) {
+        console.error('Probably failed to parse JSON message:');
+        console.error(rawBody);
+        console.error(error);
+        return;
     }
 }
 
