@@ -5,22 +5,32 @@ function playerNameExistsAlready(players: Player[], newPlayerName: string): bool
     return playerNames.includes(newPlayerName);
 }
 
+/**
+ * Creates a new player in the initiative list, if the player name doesn't exist already.
+ *
+ * @param playerList
+ * @param playerName
+ * @param playerInitiative
+ */
 function addPlayer(playerList: Player[], playerName: string, playerInitiative: number = 10) {
-    if (!playerNameExistsAlready(playerList, playerName)) {
-        const newPlayer: Player = {
-            name: playerName,
-            initiative: playerInitiative,
-        }
-
-        let index = 0;
-        for (const player of playerList) {
-            if (player.initiative < playerInitiative) {
-                break;
-            }
-            index += 1;
-        }
-        playerList.splice(index, 0, newPlayer);
+    if (playerNameExistsAlready(playerList, playerName)) {
+        return playerList;
     }
+
+    const newPlayer: Player = {
+        name: playerName,
+        initiative: playerInitiative,
+    }
+
+    let index = 0;
+    for (const player of playerList) {
+        if (player.initiative < playerInitiative) {
+            break;
+        }
+        index += 1;
+    }
+    playerList.splice(index, 0, newPlayer);
+
     return playerList;
 }
 
