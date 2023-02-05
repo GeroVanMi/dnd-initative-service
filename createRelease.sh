@@ -5,4 +5,5 @@ if [ -z "$1" ]
 fi
 
 sudo docker build -t gerovanmi/dnd-initiative-service -t gerovanmi/dnd-initiative-service:$1 .
-sudo docker push -t gerovanmi/dnd-initiative-service -t gerovanmi/dnd-initiative-service:$1
+sudo docker push gerovanmi/dnd-initiative-service:latest
+sudo docker push gerovanmi/dnd-initiative-service:$1
