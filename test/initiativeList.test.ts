@@ -71,15 +71,17 @@ test('Add a player with lower initiative player list.', () => {
 
 test('Add a player between two other players.', () => {
     const playerList: Player[] = [
-        player2,
-        player1,
-    ];
-    const expectedPlayerList: Player[] = [
-        player2,
         player3,
         player1,
+        player2,
     ];
-    expect(addPlayer(playerList, player3.name, player3.initiative)).toStrictEqual(expectedPlayerList);
+    const expectedPlayerList: Player[] = [
+        player3,
+        player1,
+        player4,
+        player2,
+    ];
+    expect(addPlayer(playerList, player4.name, player4.initiative)).toStrictEqual(expectedPlayerList);
 });
 
 test('Continue to next player', () => {

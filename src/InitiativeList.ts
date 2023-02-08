@@ -23,10 +23,15 @@ function addPlayer(playerList: Player[], playerName: string, playerInitiative: n
     }
 
     let index = 0;
+    let previousInitiative = playerList[0]?.initiative;
     for (const player of playerList) {
         if (player.initiative < playerInitiative) {
             break;
         }
+        if (player.initiative > previousInitiative) {
+            break;
+        }
+        previousInitiative = player.initiative;
         index += 1;
     }
     playerList.splice(index, 0, newPlayer);
